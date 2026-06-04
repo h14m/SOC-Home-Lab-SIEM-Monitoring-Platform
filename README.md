@@ -2,20 +2,9 @@
 
 ## Overview
 
-This project is a Security Operations Center (SOC) Home Lab designed to simulate real-world security monitoring, threat detection, and incident investigation workflows using Splunk Enterprise.
+This project is a Security Operations Center (SOC) Home Lab built to simulate real-world security monitoring, threat detection, incident investigation, and threat hunting workflows using Splunk Enterprise.
 
-The environment consists of:
-
-* AWS EC2 Ubuntu Server
-* Windows Virtual Machine
-* Kali Linux Attack Machine
-* Splunk Enterprise SIEM
-* Splunk Universal Forwarder
-* Sysmon Endpoint Telemetry
-
-The lab demonstrates log collection, detection engineering, threat hunting, attack simulation, dashboard development, alerting, and MITRE ATT&CK mapping.
-
----
+The lab integrates Windows and Linux log sources, Sysmon endpoint telemetry, attack simulation using Kali Linux, custom detections, dashboards, alerts, and MITRE ATT&CK mapping.
 
 ## Architecture
 
@@ -60,9 +49,22 @@ Splunk Enterprise
 ### Log Sources
 
 * Windows Security Logs
-* Sysmon Process Creation Events
-* Sysmon Network Connection Events
-* Linux Authentication Logs
+* Sysmon Process Creation Events (Event ID 1)
+* Sysmon Network Connection Events (Event ID 3)
+* Linux Authentication Logs (`/var/log/auth.log`)
+
+---
+
+## Key Features
+
+* Centralized log collection and monitoring
+* Windows endpoint visibility using Sysmon
+* Linux SSH authentication monitoring
+* Custom Splunk detection rules
+* SOC alert generation and investigation
+* Threat hunting dashboards
+* MITRE ATT&CK mapped detections
+* Attack simulation using Kali Linux
 
 ---
 
@@ -70,27 +72,36 @@ Splunk Enterprise
 
 ### SSH Brute Force Detection
 
-Detects repeated failed SSH authentication attempts.
+```spl
+source="/var/log/auth.log" "Failed password"
+| stats count by src_ip
+| where count > 5
+```
 
 ### PowerShell Execution Detection
 
-Detects PowerShell process execution using Sysmon Event ID 1.
+```spl
+index=main sourcetype=WinEventLog:Microsoft-Windows-Sysmon/Operational EventCode=1 Image="*powershell.exe"
+```
 
 ### CMD Execution Detection
 
-Detects Windows Command Prompt execution activity.
+```spl
+index=main sourcetype=WinEventLog:Microsoft-Windows-Sysmon/Operational EventCode=1 Image="*cmd.exe"
+```
 
 ### External Network Connection Detection
 
-Monitors outbound network connections using Sysmon Event ID 3.
+```spl
+index=main sourcetype=WinEventLog:Microsoft-Windows-Sysmon/Operational EventCode=3
+DestinationIp!="127.0.0.1"
+```
 
 ---
 
 ## Dashboards
 
 ### Windows Monitoring Dashboard
-
-Includes:
 
 * Top Executed Processes
 * Process Creation Trend
@@ -99,12 +110,9 @@ Includes:
 
 ### Linux Monitoring Dashboard
 
-Includes:
-
-* Failed SSH Logins
 * Top Attacker IP Addresses
 * SSH Attack Timeline
-* Authentication Activity
+* Failed Authentication Monitoring
 
 ---
 
@@ -114,15 +122,17 @@ Includes:
 
 * Source: Kali Linux
 * Target: Ubuntu Server
+* Detection: Linux Authentication Logs
 
-### PowerShell Activity Simulation
+### PowerShell Activity
 
 * Generated PowerShell execution events
-* Detected through Sysmon process creation monitoring
+* Detected using Sysmon Event ID 1
 
 ### Network Activity Monitoring
 
-* Outbound network connections observed using Sysmon Event ID 3
+* Monitored outbound network connections
+* Detected using Sysmon Event ID 3
 
 ### Nmap Reconnaissance
 
@@ -134,43 +144,99 @@ Includes:
 
 ## MITRE ATT&CK Mapping
 
-| Detection                | Technique |
-| ------------------------ | --------- |
-| SSH Brute Force          | T1110     |
-| Password Guessing        | T1110.001 |
-| PowerShell Execution     | T1059.001 |
-| Command Prompt Execution | T1059.003 |
-| Network Connections      | T1071     |
-| Network Discovery        | T1049     |
-| Nmap Reconnaissance      | T1046     |
+| Detection                 | Technique |
+| ------------------------- | --------- |
+| SSH Brute Force           | T1110     |
+| Password Guessing         | T1110.001 |
+| PowerShell Execution      | T1059.001 |
+| Command Prompt Execution  | T1059.003 |
+| Network Connections       | T1071     |
+| Network Discovery         | T1049     |
+| Network Service Discovery | T1046     |
+
+---
+
+## Screenshots
+
+### Windows Monitoring Dashboard
+
+![Windows Monitoring Dashboard](screenshots/windows_monitoring_dashboard.png)
+
+### Top Executed Processes
+
+![Top Executed Processes](screenshots/top_executed_processes.png)
+
+### Process Creation Trend
+
+![Process Creation Trend](screenshots/process_creation_trend.png)
+
+### PowerShell Activity Trend
+
+![PowerShell Activity Trend](screenshots/powershell_activity_trend.png)
+
+### Top Destination Ports
+
+![Top Destination Ports](screenshots/top_destination_ports.png)
+
+### PowerShell Execution Detection
+
+![PowerShell Execution Detection](screenshots/powershell_execution_detection.png)
+
+### CMD Execution Detection
+
+![CMD Execution Detection](screenshots/CMD_execution_detection.png)
+
+### Suspicious PowerShell Execution
+
+![Suspicious PowerShell Execution](screenshots/suspicious_powershell_execution.png)
+
+### External Network Connection Detection
+
+![External Network Connection](screenshots/external_network_connection.png)
+
+### SSH Brute Force Alert
+
+![SSH Brute Force Alert](screenshots/ssh_brute_force_alert.png)
+
+### Top Attacker IPs
+
+![Top Attacker IPs](screenshots/top_attacker_ips.png)
+
+### SSH Attack Timeline
+
+![SSH Attack Timeline](screenshots/ssh_attack_timeline.png)
+
+### Nmap Reconnaissance Evidence
+
+![Nmap Reconnaissance](screenshots/nmap_reconnaissance_evidence.png)
 
 ---
 
 ## Skills Demonstrated
 
-* Security Information and Event Management (SIEM)
-* Threat Detection and Monitoring
-* Detection Engineering
-* Incident Investigation
+* SIEM Monitoring
+* Threat Detection
 * Threat Hunting
+* Incident Investigation
+* Detection Engineering
 * Windows Security Monitoring
 * Linux Security Monitoring
 * Sysmon Log Analysis
-* MITRE ATT&CK Mapping
 * Splunk Dashboard Development
 * Alert Creation and Tuning
+* MITRE ATT&CK Mapping
+* Security Operations Center (SOC) Workflows
 
 ---
 
-## Project Outcomes
+## Future Enhancements
 
-* Centralized log collection
-* Multi-source telemetry monitoring
-* Custom detection rule development
-* Security alert generation
-* Threat hunting workflows
-* Incident investigation documentation
-* SOC analyst skill development
+* Integrate Windows Firewall auditing (Event IDs 5152/5157)
+* Deploy Splunk Enterprise Security
+* Add threat intelligence feeds
+* Expand attack simulations
+* Implement automated incident response workflows
+* Create advanced correlation rules
 
 ---
 
@@ -187,3 +253,11 @@ SOC-Home-Lab-SIEM-Monitoring-Platform
 ├── screenshots/
 └── README.md
 ```
+
+---
+
+## Author
+
+**Mahi H**
+
+Aspiring SOC Analyst focused on SIEM monitoring, threat detection, incident response, threat hunting, and security operations.
