@@ -81,7 +81,7 @@ source="/var/log/auth.log" "Failed password"
 ### PowerShell Execution Detection
 
 ```spl
-index=main sourcetype=WinEventLog:Microsoft-Windows-Sysmon/Operational EventCode=1 Image="*powershell.exe"
+index=main sourcetype=WinEventLog:Microsoft-Windows-Sysmon/Operational EventCode=1 Image="*powershell.exe"   'mahi'
 ```
 
 ### CMD Execution Detection
